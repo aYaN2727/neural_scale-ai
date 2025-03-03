@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+ray[default]
+gym
+numpy
+tensorflow
+qiskit
+boto3
+google-cloud-compute
+matplotlib
+scikit-learn
+pandas
