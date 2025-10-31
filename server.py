@@ -3,17 +3,11 @@ from ray import tune
 from ray.rllib.agents.ppo import PPOTrainer
 import gym
 import numpy as np
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI
 from sklearn.ensemble import IsolationForest
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit.utils import algorithm_globals
 import uvicorn
-import matplotlib.pyplot as plt
-from pydantic import BaseModel
-import boto3
-from google.cloud import compute_v1
-from vultr import Vultr
-import time
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
@@ -57,16 +51,20 @@ if real_world_data is not None:
 else:
     real_training_data = np.random.normal(50, 10, (10000, 3))  # Fallback synthetic data
 
-# Initialize RLlib trainer with real-world data
-ray.init(ignore_reinit_error=True)
-tune.register_env("cloud_scaling", lambda config: CloudScalingEnv())
-trainer = PPOTrainer(env="cloud_scaling", config={"framework": "torch", "num_workers": 1})
+ENABLE_TRAINING = os.getenv("ENABLE_TRAINING", "0") == "1"
 
-# Train with real-world dataset
-for i in range(5000):  # Reduced iterations for cloud deployment
-    result = trainer.train()
-    if i % 1000 == 0:
-        print(f"Iteration {i}: Reward = {result['episode_reward_mean']}")
+# Initialize RLlib trainer with real-world data (gated for cloud startup)
+trainer = None
+if ENABLE_TRAINING:
+    ray.init(ignore_reinit_error=True)
+    tune.register_env("cloud_scaling", lambda config: CloudScalingEnv())
+    trainer = PPOTrainer(env="cloud_scaling", config={"framework": "torch", "num_workers": 1})
+
+    # Train with real-world dataset
+    for i in range(5000):  # Reduced iterations for cloud deployment
+        result = trainer.train()
+        if i % 1000 == 0:
+            print(f"Iteration {i}: Reward = {result['episode_reward_mean']}")
 
 # Train Predictive Anomaly Detection with real-world data
 anomaly_detector = IsolationForest(contamination=0.05)
@@ -119,4 +117,4 @@ def root():
     return {"message": "NeuralScale AI is running on Render!"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8080)))

@@ -1,6 +1,15 @@
 # neural_scale-ai
 # NeuralScale AI - Intelligent Cloud Resource Optimization 🚀
 
+## 🎯 Vision
+**A cloud‑native, multi‑cloud platform for predictive anomaly detection and cost‑aware auto‑scaling of AI/analytics workloads, with RL‑based optimization, edge extensions, and auditable billing.**
+
+## 📈 Success Metrics (Initial)
+- **MTTD/MTTR**: ≥50% reduction in mean time to detect and recover incidents
+- **Cost/Throughput**: ≥25% reduction in $/1000 requests at same SLOs
+- **Accuracy/Drift**: ≥10% improvement in anomaly precision@95% recall; ≤1% weekly model performance drift
+- **Autoscaling QoS**: 99.9% of requests finish under p95 target with RL autoscaler enabled
+
 ## 📌 Overview
 NeuralScale AI is an **intelligent cloud resource optimization system** powered by **Reinforcement Learning (RL), AI-based anomaly detection, and quantum-inspired optimization**. It dynamically scales cloud resources based on workload demands while optimizing for **cost, performance, and efficiency**.
 
@@ -14,6 +23,35 @@ NeuralScale AI is an **intelligent cloud resource optimization system** powered 
 ✅ **Edge Computing Optimization** for IoT & latency-sensitive applications  
 ✅ **Security & Compliance Monitoring** (GDPR, SOC2, Intrusion Detection)  
 ✅ **Real-Time Visualization** via FastAPI + WebSockets  
+
+---
+
+## 🚀 Deployment on AWS App Runner
+### Option A: Deploy from a container registry (recommended)
+1. Build and push the image:
+   ```sh
+   docker build -t YOUR_ECR_REPO_URI:latest .
+   docker push YOUR_ECR_REPO_URI:latest
+   ```
+2. In AWS Console → App Runner → Create service → From container registry.
+3. Select the ECR image, set Runtime to container, and set the following:
+   - Port: `8080`
+   - Environment variables:
+     - `ENABLE_TRAINING=0` (avoid heavy training on startup)
+   - Auto scaling per your needs.
+4. Create service. Health check path: `/`.
+
+### Option B: Deploy from source (App Runner builds the image)
+1. Connect GitHub repo and select this directory as the root.
+2. Use the included `Dockerfile` so App Runner performs a container build.
+3. Set Port `8080` and env var `ENABLE_TRAINING=0`.
+
+### Local test
+```sh
+docker build -t neural-scale-ai .
+docker run -p 8080:8080 -e ENABLE_TRAINING=0 neural-scale-ai
+curl http://localhost:8080/
+```
 
 ---
 
